@@ -1,0 +1,98 @@
+.hero{
+  padding: 16px;
+  display:flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items:flex-start;
+}
+
+.hero-text{
+  max-width: 650px;
+}
+
+.search{
+  margin-top: 10px;
+}
+
+.search-input{
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  outline: none;
+}
+
+.search-input:focus{
+  border-color: rgba(109,94,252,0.55);
+  box-shadow: 0 0 0 4px rgba(109,94,252,0.14);
+}
+
+.hero-badges{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content:flex-end;
+}
+
+.cards{
+  margin-top: 14px;
+}
+
+.restaurant{
+  padding: 14px;
+  display:flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.10s ease, border-color 0.12s ease, background 0.12s ease;
+}
+.restaurant:hover{
+  transform: translateY(-2px);
+  border-color: rgba(232,238,252,0.18);
+  background: rgba(255,255,255,0.05);
+}
+
+.r-head{
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  gap: 10px;
+}
+
+.r-name{
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  font-size: 16px;
+}
+
+.r-cuisine{ font-size: 12px; }
+
+.r-meta{
+  display:flex;
+  gap: 12px;
+}
+
+.meta{
+  flex:1;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255,255,255,0.03);
+}
+
+.label{ font-size: 11px; }
+.value{ font-weight: 800; margin-top: 2px; }
+
+.r-note{
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.r-cta{
+  margin-top: 6px;
+}
+
+.empty{
+  margin-top: 12px;
+}

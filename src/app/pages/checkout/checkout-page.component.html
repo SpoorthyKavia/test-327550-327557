@@ -1,0 +1,106 @@
+<section class="grid cols-2">
+  <div class="card panel">
+    <h1 class="page-title">Checkout</h1>
+    <p class="muted">Enter your details and place a demo order.</p>
+
+    <div class="alert error" *ngIf="error() as e">{{ e }}</div>
+    <div class="alert success" *ngIf="success() as s">{{ s }}</div>
+
+    <div class="form">
+      <label class="field">
+        <span class="label muted">Full name</span>
+        <input class="input" type="text" [value]="form().name" (input)="update('name', $any($event.target).value)" />
+      </label>
+
+      <label class="field">
+        <span class="label muted">Phone</span>
+        <input class="input" type="tel" [value]="form().phone" (input)="update('phone', $any($event.target).value)" />
+      </label>
+
+      <label class="field">
+        <span class="label muted">Delivery address</span>
+        <input
+          class="input"
+          type="text"
+          [value]="form().address"
+          (input)="update('address', $any($event.target).value)"
+          placeholder="Street, city, ZIP"
+        />
+      </label>
+
+      <label class="field">
+        <span class="label muted">Delivery instructions</span>
+        <textarea
+          class="input textarea"
+          [value]="form().instructions"
+          (input)="update('instructions', $any($event.target).value)"
+          placeholder="Door code, leave at door, etc."
+        ></textarea>
+      </label>
+
+      <div class="field">
+        <span class="label muted">Payment method</span>
+        <div class="radio-row">
+          <label class="radio">
+            <input
+              type="radio"
+              name="pay"
+              [checked]="form().paymentMethod === 'card'"
+              (change)="update('paymentMethod', 'card')"
+            />
+            <span>Card</span>
+          </label>
+          <label class="radio">
+            <input
+              type="radio"
+              name="pay"
+              [checked]="form().paymentMethod === 'cash'"
+              (change)="update('paymentMethod', 'cash')"
+            />
+            <span>Cash</span>
+          </label>
+        </div>
+      </div>
+
+      <button class="btn primary" type="button" (click)="placeOrder()" [disabled]="cartEmpty()">
+        Place order
+      </button>
+
+      <div class="muted small" *ngIf="cartEmpty()">
+        Your cart is empty. <a routerLink="/" class="link">Browse restaurants</a>.
+      </div>
+    </div>
+  </div>
+
+  <div class="card panel">
+    <div class="section-head">
+      <div class="section-title">Order summary</div>
+      <a class="pill" routerLink="/">Add more</a>
+    </div>
+
+    <div class="summary-empty muted" *ngIf="cart.items().length === 0">No items in cart.</div>
+
+    <div class="line" *ngFor="let item of cart.items(); trackBy: cart.trackByKey">
+      <div class="l-main">
+        <div class="l-title">{{ item.name }}</div>
+        <div class="muted l-meta">{{ item.restaurantName }} • Qty {{ item.quantity }}</div>
+      </div>
+      <div class="l-price">{{ (item.price * item.quantity) | currency:'USD' }}</div>
+    </div>
+
+    <div class="totals">
+      <div class="row">
+        <div class="muted">Subtotal</div>
+        <div>{{ cart.subtotal() | currency:'USD' }}</div>
+      </div>
+      <div class="row">
+        <div class="muted">Delivery</div>
+        <div>{{ cart.deliveryFee() | currency:'USD' }}</div>
+      </div>
+      <div class="row strong">
+        <div>Total</div>
+        <div>{{ cart.total() | currency:'USD' }}</div>
+      </div>
+    </div>
+  </div>
+</section>

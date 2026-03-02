@@ -1,0 +1,91 @@
+:root{
+  --bg: #0b1220;
+  --panel: #0f1b33;
+  --card: #111f3d;
+  --text: #e8eefc;
+  --muted: #a7b4d6;
+  --primary: #6d5efc;
+  --primary-2: #3dd6d0;
+  --danger: #ff4d6d;
+  --border: rgba(232,238,252,0.10);
+  --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  --radius: 16px;
+  --radius-sm: 12px;
+  --max: 1100px;
+}
+
+*{ box-sizing: border-box; }
+html, body { height: 100%; }
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  background: radial-gradient(1200px 600px at 20% -10%, rgba(109,94,252,0.35), transparent 60%),
+              radial-gradient(800px 500px at 110% 20%, rgba(61,214,208,0.20), transparent 55%),
+              var(--bg);
+  color: var(--text);
+}
+
+a{ color: inherit; text-decoration: none; }
+button, input{ font: inherit; }
+
+.container{
+  width: min(var(--max), calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.page-title{
+  font-size: 28px;
+  margin: 18px 0 14px;
+  letter-spacing: 0.2px;
+}
+
+.muted{ color: var(--muted); }
+
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.btn{
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.12s ease, border-color 0.12s ease;
+}
+.btn:hover{ background: rgba(255,255,255,0.06); }
+.btn:active{ transform: translateY(1px); }
+.btn.primary{
+  background: linear-gradient(135deg, var(--primary), #4b3df3);
+  border-color: rgba(109,94,252,0.55);
+}
+.btn.danger{
+  background: rgba(255,77,109,0.12);
+  border-color: rgba(255,77,109,0.35);
+}
+
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: rgba(255,255,255,0.03);
+  font-size: 12px;
+}
+
+.grid{
+  display:grid;
+  gap: 14px;
+}
+
+@media (min-width: 860px){
+  .grid.cols-2{ grid-template-columns: 1.15fr 0.85fr; }
+  .grid.cols-3{ grid-template-columns: repeat(3, 1fr); }
+}

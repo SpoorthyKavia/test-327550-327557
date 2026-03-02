@@ -1,0 +1,142 @@
+import { Injectable, computed, signal } from '@angular/core';
+
+export interface CartLine {
+  key: string;
+  restaurantId: string;
+  restaurantName: string;
+  menuItemId: string;
+  name: string;
+  price: number; // dollars
+  quantity: number;
+}
+
+@Injectable({ providedIn: 'root' })
+export class CartService {
+  private readonly _items = signal<CartLine[]>([]);
+  private readonly _deliveryFee = signal<number>(2.49);
+
+  // PUBLIC_INTERFACE
+  /**
+   * Current cart lines.
+   */
+  items(): CartLine[] {
+    return this._items();
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Delivery fee (dollars). Updated when the first item of a restaurant is added.
+   */
+  deliveryFee(): number {
+    return this._deliveryFee();
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Adds an item to cart. If cart contains items from a different restaurant, it resets cart first.
+   */
+  add(params: {
+    restaurantId: string;
+    restaurantName: string;
+    deliveryFee: number;
+    menuItemId: string;
+    name: string;
+    price: number;
+  }): { resetOccurred: boolean } {
+    const current = this._items();
+    const hasDifferentRestaurant =
+      current.length > 0 && current.some((l) => l.restaurantId !== params.restaurantId);
+
+    if (hasDifferentRestaurant) {
+      this._items.set([]);
+    }
+
+    // Update delivery fee based on restaurant
+    this._deliveryFee.set(params.deliveryFee);
+
+    const key = `${params.restaurantId}:${params.menuItemId}`;
+    const existing = this._items().find((l) => l.key === key);
+
+    if (existing) {
+      this.increment(key);
+    } else {
+      this._items.set([
+        ...this._items(),
+        {
+          key,
+          restaurantId: params.restaurantId,
+          restaurantName: params.restaurantName,
+          menuItemId: params.menuItemId,
+          name: params.name,
+          price: params.price,
+          quantity: 1,
+        },
+      ]);
+    }
+
+    return { resetOccurred: hasDifferentRestaurant };
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Increase quantity for a cart line.
+   */
+  increment(key: string): void {
+    this._items.set(
+      this._items().map((l) => (l.key === key ? { ...l, quantity: l.quantity + 1 } : l)),
+    );
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Decrease quantity for a cart line (removes when hits zero).
+   */
+  decrement(key: string): void {
+    const updated = this._items()
+      .map((l) => (l.key === key ? { ...l, quantity: l.quantity - 1 } : l))
+      .filter((l) => l.quantity > 0);
+    this._items.set(updated);
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Remove a cart line entirely.
+   */
+  remove(key: string): void {
+    this._items.set(this._items().filter((l) => l.key !== key));
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Clears the cart.
+   */
+  clear(): void {
+    this._items.set([]);
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Cart subtotal in dollars.
+   */
+  subtotal = computed(() => this._items().reduce((sum, l) => sum + l.price * l.quantity, 0));
+
+  // PUBLIC_INTERFACE
+  /**
+   * Cart total items count.
+   */
+  totalItems = computed(() => this._items().reduce((sum, l) => sum + l.quantity, 0));
+
+  // PUBLIC_INTERFACE
+  /**
+   * Cart total in dollars (subtotal + delivery fee if cart not empty).
+   */
+  total = computed(() => (this._items().length > 0 ? this.subtotal() + this.deliveryFee() : 0));
+
+  // PUBLIC_INTERFACE
+  /**
+   * trackBy function for ngFor rendering.
+   */
+  trackByKey(_index: number, item: CartLine): string {
+    return item.key;
+  }
+}

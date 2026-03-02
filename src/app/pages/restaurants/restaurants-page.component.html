@@ -1,0 +1,53 @@
+<section class="hero card">
+  <div class="hero-text">
+    <h1 class="page-title">Find something delicious</h1>
+    <p class="muted">
+      Browse restaurants, add items to your cart, and place a demo order. (No backend required.)
+    </p>
+    <div class="search">
+      <input
+        class="search-input"
+        type="search"
+        placeholder="Search restaurants or cuisine..."
+        [value]="query()"
+        (input)="setQuery(($any($event.target).value))"
+        aria-label="Search restaurants"
+      />
+    </div>
+  </div>
+  <div class="hero-badges">
+    <div class="pill">Realistic UX</div>
+    <div class="pill">Cart + Checkout</div>
+    <div class="pill">Demo data</div>
+  </div>
+</section>
+
+<section class="grid cols-3 cards">
+  <a class="restaurant card" *ngFor="let r of filtered(); trackBy: r.id" [routerLink]="['/restaurants', r.id]">
+    <div class="r-head">
+      <div class="r-name">{{ r.name }}</div>
+      <div class="pill">{{ r.rating }} ★</div>
+    </div>
+    <div class="muted r-cuisine">{{ cuisineLabel(r) }}</div>
+
+    <div class="r-meta">
+      <div class="meta">
+        <div class="label muted">ETA</div>
+        <div class="value">{{ r.etaMinutes }} min</div>
+      </div>
+      <div class="meta">
+        <div class="label muted">Delivery</div>
+        <div class="value">\${{ (r.deliveryFeeCents / 100).toFixed(2) }}</div>
+      </div>
+    </div>
+
+    <div class="r-note">{{ r.heroNote }}</div>
+    <div class="r-cta">
+      <span class="btn primary">View menu</span>
+    </div>
+  </a>
+</section>
+
+<div class="muted empty" *ngIf="filtered().length === 0">
+  No restaurants match your search. Try “pizza” or “healthy”.
+</div>

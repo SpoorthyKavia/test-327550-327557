@@ -1,0 +1,84 @@
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a class="brand" routerLink="/">
+      <div class="logo">FD</div>
+      <div class="brand-text">
+        <div class="name">Food Delivery</div>
+        <div class="tag muted">Fast demo app</div>
+      </div>
+    </a>
+
+    <div class="actions">
+      <a class="pill" routerLink="/">Restaurants</a>
+
+      <button class="btn" type="button" (click)="openCart()" [attr.aria-label]="'Open cart with ' + cartCount() + ' items'">
+        Cart
+        <span class="badge">{{ cartCount() }}</span>
+      </button>
+
+      <a class="btn primary" routerLink="/checkout">Checkout</a>
+    </div>
+  </div>
+</header>
+
+<main class="container main">
+  <router-outlet></router-outlet>
+</main>
+
+<div class="overlay" *ngIf="cartOpen()" (click)="closeCart()" aria-hidden="true"></div>
+
+<aside class="drawer" [class.open]="cartOpen()" aria-label="Cart drawer">
+  <div class="drawer-header">
+    <div>
+      <div class="drawer-title">Your cart</div>
+      <div class="muted drawer-subtitle">{{ cartCount() }} item(s) • {{ cartTotal() | currency:'USD' }}</div>
+    </div>
+    <button class="btn" type="button" (click)="closeCart()">Close</button>
+  </div>
+
+  <div class="drawer-body">
+    <div class="empty" *ngIf="cartService.items().length === 0">
+      Your cart is empty. Add items from a restaurant menu.
+    </div>
+
+    <div class="cart-item" *ngFor="let item of cartService.items(); trackBy: cartService.trackByKey">
+      <div class="ci-main">
+        <div class="ci-title">{{ item.name }}</div>
+        <div class="muted ci-meta">
+          {{ item.price | currency:'USD' }} • {{ item.restaurantName }}
+        </div>
+      </div>
+
+      <div class="ci-actions">
+        <button class="btn" type="button" (click)="cartService.decrement(item.key)" aria-label="Decrease quantity">-</button>
+        <div class="qty" aria-label="Quantity">{{ item.quantity }}</div>
+        <button class="btn" type="button" (click)="cartService.increment(item.key)" aria-label="Increase quantity">+</button>
+        <button class="btn danger" type="button" (click)="cartService.remove(item.key)" aria-label="Remove item">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="drawer-footer">
+    <div class="totals">
+      <div class="row">
+        <div class="muted">Subtotal</div>
+        <div>{{ cartTotal() | currency:'USD' }}</div>
+      </div>
+      <div class="row">
+        <div class="muted">Delivery</div>
+        <div>{{ cartService.deliveryFee() | currency:'USD' }}</div>
+      </div>
+      <div class="row strong">
+        <div>Total</div>
+        <div>{{ cartService.total() | currency:'USD' }}</div>
+      </div>
+    </div>
+
+    <a class="btn primary full" routerLink="/checkout" (click)="closeCart()" [class.disabled]="cartService.items().length === 0">
+      Go to checkout
+    </a>
+    <button class="btn full" type="button" (click)="cartService.clear()" [disabled]="cartService.items().length === 0">
+      Clear cart
+    </button>
+  </div>
+</aside>

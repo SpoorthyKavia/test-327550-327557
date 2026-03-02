@@ -1,0 +1,57 @@
+<a class="pill back" routerLink="/">← Back</a>
+
+<section class="header card" *ngIf="restaurant() as r; else notFound">
+  <div class="h-main">
+    <h1 class="page-title">{{ r.name }}</h1>
+    <div class="muted">{{ r.cuisine.join(' • ') }} • {{ r.rating }} ★</div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="muted label">ETA</div>
+        <div class="value">{{ r.etaMinutes }} min</div>
+      </div>
+      <div class="stat">
+        <div class="muted label">Delivery fee</div>
+        <div class="value">{{ (r.deliveryFeeCents / 100) | currency:'USD' }}</div>
+      </div>
+    </div>
+
+    <p class="note">{{ r.heroNote }}</p>
+
+    <div class="notice" *ngIf="notice() as n">{{ n }}</div>
+  </div>
+</section>
+
+<ng-template #notFound>
+  <section class="card header">
+    <h1 class="page-title">Restaurant not found</h1>
+    <p class="muted">The restaurant you requested doesn’t exist in this demo dataset.</p>
+    <a class="btn primary" routerLink="/">Return to restaurants</a>
+  </section>
+</ng-template>
+
+<section *ngIf="restaurant() as r">
+  <div class="section-title">Menu</div>
+
+  <div class="category card" *ngFor="let group of grouped(); trackBy: group.category">
+    <div class="cat-head">
+      <div class="cat-name">{{ group.category }}</div>
+      <div class="pill">{{ group.items.length }} item(s)</div>
+    </div>
+
+    <div class="menu-item" *ngFor="let item of group.items; trackBy: item.id">
+      <div class="mi-main">
+        <div class="mi-name">
+          {{ item.name }}
+          <span class="pill small" *ngFor="let b of badges(item); trackBy: b">{{ b }}</span>
+        </div>
+        <div class="muted mi-desc">{{ item.description }}</div>
+      </div>
+
+      <div class="mi-actions">
+        <div class="price">{{ (item.priceCents / 100) | currency:'USD' }}</div>
+        <button class="btn primary" type="button" (click)="add(item)">Add</button>
+      </div>
+    </div>
+  </div>
+</section>
