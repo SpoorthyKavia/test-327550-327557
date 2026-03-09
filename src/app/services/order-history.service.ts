@@ -105,12 +105,16 @@ export class OrderHistoryService {
     const subtotal = items.reduce((sum, l) => sum + l.price * l.quantity, 0);
     const deliveryFee = cart.deliveryFee();
     const discount = cart.promoDiscount();
-    const total = Math.max(0, subtotal + deliveryFee - discount);
+
+    const baseAfterDiscount = Math.max(0, subtotal + deliveryFee - discount);
+    const tip = cart.tipAmount();
+    const total = Math.max(0, baseAfterDiscount + tip);
 
     const totals = {
       subtotal,
       deliveryFee,
       discount,
+      tip,
       total,
     };
 
@@ -124,6 +128,7 @@ export class OrderHistoryService {
       lines: items.map(toOrderLineSnapshot),
       totals,
       promoCode: cart.promoCode(),
+      tipSelection: cart.tipSelection(),
     };
 
     this.appendOrder(order);

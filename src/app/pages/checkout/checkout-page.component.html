@@ -139,9 +139,47 @@
         <div class="neg">-{{ cart.promoDiscount() | currency:'USD' }}</div>
       </div>
 
+      <div class="row">
+        <div class="muted">Tip</div>
+        <div>{{ cart.tipAmount() | currency:'USD' }}</div>
+      </div>
+
+      <div class="tip-box">
+        <div class="muted small">Add a tip</div>
+
+        <div class="tip-presets">
+          <button
+            class="btn chip"
+            type="button"
+            *ngFor="let p of tipPresets"
+            [class.active]="tipIsPresetSelected(p.percent)"
+            (click)="selectTipPercent(p.percent)"
+            [disabled]="cart.items().length === 0"
+          >
+            {{ p.label }}
+          </button>
+        </div>
+
+        <div class="tip-custom">
+          <input
+            class="input tip-input"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="Custom tip ($)"
+            [value]="customTipInput()"
+            (input)="updateCustomTipInput($any($event.target).value)"
+            [disabled]="cart.items().length === 0"
+          />
+          <button class="btn" type="button" (click)="applyCustomTip()" [disabled]="cart.items().length === 0 || !customTipInput().trim()">
+            Apply
+          </button>
+        </div>
+      </div>
+
       <div class="row strong">
         <div>Total</div>
-        <div>{{ cart.totalAfterDiscount() | currency:'USD' }}</div>
+        <div>{{ cart.totalWithTip() | currency:'USD' }}</div>
       </div>
     </div>
   </div>

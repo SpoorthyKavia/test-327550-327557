@@ -136,6 +136,48 @@
   border-radius: 10px;
 }
 
+.tip-box {
+  margin-top: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tip-presets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.btn.chip {
+  padding: 8px 10px;
+  border-radius: 999px;
+}
+
+.btn.chip.active {
+  border-color: rgba(124, 92, 255, 0.75);
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.15);
+}
+
+.tip-custom {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.tip-input {
+  width: 160px;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
 .neg {
   color: #ff7a7a;
 }

@@ -1,0 +1,95 @@
+<section class="grid cols-2" *ngIf="order() as o; else missing">
+  <div class="card panel">
+    <h1 class="page-title">Order confirmed</h1>
+    <p class="muted">Thanks, {{ o.customer.name }}. Your order has been placed (demo) and saved to your device.</p>
+
+    <div class="meta">
+      <div class="pill">Order {{ o.id }}</div>
+      <div class="pill">Placed {{ o.placedAtIso | date:'medium' }}</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Delivery</div>
+      <div class="kv">
+        <div class="k muted">Phone</div>
+        <div class="v">{{ o.customer.phone }}</div>
+      </div>
+      <div class="kv">
+        <div class="k muted">Address</div>
+        <div class="v">{{ o.customer.address }}</div>
+      </div>
+      <div class="kv" *ngIf="o.customer.instructions">
+        <div class="k muted">Instructions</div>
+        <div class="v">{{ o.customer.instructions }}</div>
+      </div>
+      <div class="kv">
+        <div class="k muted">Payment</div>
+        <div class="v">{{ o.paymentMethod === 'card' ? 'Card' : 'Cash' }}</div>
+      </div>
+      <div class="kv" *ngIf="o.tipSelection?.type">
+        <div class="k muted">Tip</div>
+        <div class="v">
+          <ng-container *ngIf="o.tipSelection.type === 'percent'; else amt">
+            {{ (o.tipSelection.percent ?? 0) * 100 }}%
+          </ng-container>
+          <ng-template #amt>{{ (o.tipSelection.amount ?? 0) | currency:'USD' }}</ng-template>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a class="btn primary" routerLink="/">Back to restaurants</a>
+      <a class="btn" routerLink="/orders">View order history</a>
+    </div>
+  </div>
+
+  <div class="card panel">
+    <div class="section-head">
+      <div class="section-title">Order summary</div>
+      <div class="pill">{{ o.restaurantName }}</div>
+    </div>
+
+    <div class="line" *ngFor="let item of o.lines">
+      <div class="l-main">
+        <div class="l-title">{{ item.name }}</div>
+        <div class="muted l-meta">Qty {{ item.quantity }}</div>
+      </div>
+      <div class="l-price">{{ (item.price * item.quantity) | currency:'USD' }}</div>
+    </div>
+
+    <div class="totals">
+      <div class="row">
+        <div class="muted">Subtotal</div>
+        <div>{{ o.totals.subtotal | currency:'USD' }}</div>
+      </div>
+      <div class="row">
+        <div class="muted">Delivery</div>
+        <div>{{ o.totals.deliveryFee | currency:'USD' }}</div>
+      </div>
+      <div class="row" *ngIf="o.totals.discount > 0">
+        <div class="muted">Discount</div>
+        <div class="neg">-{{ o.totals.discount | currency:'USD' }}</div>
+      </div>
+      <div class="row">
+        <div class="muted">Tip</div>
+        <div>{{ o.totals.tip | currency:'USD' }}</div>
+      </div>
+      <div class="row strong">
+        <div>Total</div>
+        <div>{{ o.totals.total | currency:'USD' }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<ng-template #missing>
+  <section class="card panel">
+    <h1 class="page-title">No recent order found</h1>
+    <p class="muted">If you placed an order previously, you can find it in your order history.</p>
+
+    <div class="actions">
+      <a class="btn primary" routerLink="/orders">Go to order history</a>
+      <a class="btn" routerLink="/">Browse restaurants</a>
+    </div>
+  </section>
+</ng-template>

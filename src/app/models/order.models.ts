@@ -9,6 +9,20 @@ export interface CustomerInfo {
   instructions: string;
 }
 
+export type TipType = 'percent' | 'amount';
+
+export interface TipSelection {
+  type: TipType;
+  /**
+   * Tip percent (e.g., 0.15 for 15%). Present when type === 'percent'.
+   */
+  percent?: number;
+  /**
+   * Tip amount (dollars). Present when type === 'amount'.
+   */
+  amount?: number;
+}
+
 export interface OrderTotals {
   subtotal: number; // dollars
   deliveryFee: number; // dollars
@@ -19,7 +33,12 @@ export interface OrderTotals {
   discount: number;
 
   /**
-   * Total after discounts (dollars).
+   * Tip amount (dollars). Always >= 0.
+   */
+  tip: number;
+
+  /**
+   * Total after discounts + tip (dollars).
    */
   total: number; // dollars
 }
@@ -53,6 +72,11 @@ export interface OrderSnapshot {
    * Promo code used for the order (normalized, uppercase). Null if none.
    */
   promoCode: string | null;
+
+  /**
+   * Tip selection snapshot (so history/confirmation reflect what the user chose).
+   */
+  tipSelection: TipSelection;
 }
 
 // PUBLIC_INTERFACE

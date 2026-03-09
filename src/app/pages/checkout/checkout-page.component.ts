@@ -3,7 +3,7 @@ import { CurrencyPipe, NgIf, NgFor } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { OrderHistoryService } from '../../services/order-history.service';
-import { PaymentMethod } from '../../models/order.models';
+import { PaymentMethod, TipSelection } from '../../models/order.models';
 import { LocalStorageService } from '../../services/local-storage.service';
 import { ToastService } from '../../services/toast.service';
 
@@ -14,6 +14,8 @@ interface CheckoutForm {
   instructions: string;
   paymentMethod: PaymentMethod;
 }
+
+type TipPreset = { label: string; percent: number };
 
 interface PersistedCheckoutFormV1 {
   version: 1;
@@ -43,6 +45,16 @@ export class CheckoutPageComponent {
 
   protected readonly cartEmpty = computed(() => this.cart.items().length === 0);
 
+  protected readonly tipPresets: TipPreset[] = [
+    { label: '0%', percent: 0.0 },
+    { label: '10%', percent: 0.1 },
+    { label: '15%', percent: 0.15 },
+    { label: '20%', percent: 0.2 },
+  ];
+
+  /** UI-only value; persisted source-of-truth is cart.tipSelection(). */
+  protected readonly customTipInput = signal<string>('');
+
   constructor(
     protected readonly cart: CartService,
     private readonly history: OrderHistoryService,
@@ -53,6 +65,12 @@ export class CheckoutPageComponent {
     this.restoreFormFromStorage();
     // Pre-fill input from cart promo (if any)
     this.promoCodeInput.set(this.cart.promoCode() ?? '');
+
+    // Initialize custom tip input if user previously selected custom amount.
+    const ts = this.cart.tipSelection();
+    if (ts.type === 'amount') {
+      this.customTipInput.set((ts.amount ?? 0).toFixed(2));
+    }
   }
 
   /**
@@ -119,6 +137,34 @@ export class CheckoutPageComponent {
     this.cart.clearPromoCode();
     this.promoCodeInput.set('');
     this.toasts.success('Promo removed', 1200);
+  }
+
+  protected selectTipPercent(percent: number): void {
+    const selection: TipSelection = { type: 'percent', percent };
+    this.cart.setTipSelection(selection);
+    // Clear custom input when switching to preset.
+    this.customTipInput.set('');
+  }
+
+  protected updateCustomTipInput(value: string): void {
+    this.customTipInput.set(value);
+  }
+
+  protected applyCustomTip(): void {
+    const raw = this.customTipInput().trim();
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      this.toasts.error('Enter a valid non-negative tip amount.', 1800);
+      return;
+    }
+    const rounded = Math.round(parsed * 100) / 100;
+    this.cart.setTipSelection({ type: 'amount', amount: rounded });
+    this.toasts.success('Custom tip applied.', 1200);
+  }
+
+  protected tipIsPresetSelected(percent: number): boolean {
+    const ts = this.cart.tipSelection();
+    return ts.type === 'percent' && (ts.percent ?? 0) === percent;
   }
 
   protected placeOrder(): void {

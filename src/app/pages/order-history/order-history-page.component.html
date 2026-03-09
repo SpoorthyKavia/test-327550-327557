@@ -1,0 +1,74 @@
+<section class="card panel">
+  <div class="head">
+    <div>
+      <h1 class="page-title">Order history</h1>
+      <p class="muted">Stored locally in your browser (localStorage).</p>
+    </div>
+
+    <div class="head-actions">
+      <a class="btn" routerLink="/">Restaurants</a>
+      <button class="btn danger" type="button" (click)="clear()" [disabled]="orders().length === 0">Clear history</button>
+    </div>
+  </div>
+
+  <div class="empty muted" *ngIf="orders().length === 0">
+    No past orders yet. <a routerLink="/checkout" class="link">Go to checkout</a> after adding items.
+  </div>
+
+  <div class="order" *ngFor="let o of orders(); trackBy: trackById">
+    <div class="order-top">
+      <div class="left">
+        <div class="title">
+          <span class="strong">{{ o.restaurantName }}</span>
+          <span class="muted small"> • {{ o.placedAtIso | date:'medium' }}</span>
+        </div>
+        <div class="muted small">
+          Order {{ o.id }} • {{ o.paymentMethod === 'card' ? 'Card' : 'Cash' }}
+          <span *ngIf="o.totals.tip > 0"> • Tip {{ o.totals.tip | currency:'USD' }}</span>
+        </div>
+      </div>
+      <div class="right">
+        <div class="strong">{{ o.totals.total | currency:'USD' }}</div>
+        <div class="muted small">{{ o.lines.length }} item(s)</div>
+      </div>
+    </div>
+
+    <div class="order-actions">
+      <button class="btn" type="button" (click)="reorder(o)">Reorder</button>
+      <a class="btn secondary" [routerLink]="'/restaurants/' + o.restaurantId">View restaurant</a>
+    </div>
+
+    <div class="lines">
+      <div class="line" *ngFor="let item of o.lines">
+        <div class="l-main">
+          <div class="l-title">{{ item.name }}</div>
+          <div class="muted l-meta">Qty {{ item.quantity }}</div>
+        </div>
+        <div class="l-price">{{ (item.price * item.quantity) | currency:'USD' }}</div>
+      </div>
+    </div>
+
+    <div class="totals">
+      <div class="row">
+        <div class="muted">Subtotal</div>
+        <div>{{ o.totals.subtotal | currency:'USD' }}</div>
+      </div>
+      <div class="row">
+        <div class="muted">Delivery</div>
+        <div>{{ o.totals.deliveryFee | currency:'USD' }}</div>
+      </div>
+      <div class="row" *ngIf="o.totals.discount > 0">
+        <div class="muted">Discount</div>
+        <div class="neg">-{{ o.totals.discount | currency:'USD' }}</div>
+      </div>
+      <div class="row">
+        <div class="muted">Tip</div>
+        <div>{{ o.totals.tip | currency:'USD' }}</div>
+      </div>
+      <div class="row strong">
+        <div>Total</div>
+        <div>{{ o.totals.total | currency:'USD' }}</div>
+      </div>
+    </div>
+  </div>
+</section>

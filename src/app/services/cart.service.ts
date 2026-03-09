@@ -2,7 +2,7 @@ import { Injectable, computed, signal } from '@angular/core';
 import { LocalStorageService } from './local-storage.service';
 import { PromoCodeService, PromoDiscountBreakdown } from './promo-code.service';
 import { FoodDataService } from './food-data.service';
-import { OrderSnapshot } from '../models/order.models';
+import { OrderSnapshot, TipSelection } from '../models/order.models';
 
 export interface CartLine {
   key: string;
@@ -19,6 +19,7 @@ interface PersistedCartV1 {
   deliveryFee: number;
   items: CartLine[];
   promoCode?: string | null;
+  tipSelection?: TipSelection;
 }
 
 /**
@@ -44,6 +45,9 @@ export class CartService {
   // Promo code state lives with the cart so it can affect totals and persist locally.
   private readonly _promoCode = signal<string | null>(null);
   private readonly _promoError = signal<string | null>(null);
+
+  // Tip selection state lives with the cart so totals and checkout stay consistent.
+  private readonly _tipSelection = signal<TipSelection>({ type: 'percent', percent: 0.0 });
 
   constructor(
     private readonly storage: LocalStorageService,
@@ -74,9 +78,13 @@ export class CartService {
           ? null
           : null;
 
+    const tipSelectionRaw = persisted.tipSelection as Partial<TipSelection> | undefined;
+    const tipSelection: TipSelection = this.normalizeTipSelection(tipSelectionRaw);
+
     this._items.set(items);
     this._deliveryFee.set(deliveryFee);
     this._promoCode.set(promoCode || null);
+    this._tipSelection.set(tipSelection);
   }
 
   private persistToStorage(): void {
@@ -85,6 +93,7 @@ export class CartService {
       deliveryFee: this._deliveryFee(),
       items: this._items(),
       promoCode: this._promoCode(),
+      tipSelection: this._tipSelection(),
     };
     this.storage.writeJson(this.storageKey, payload);
   }
@@ -119,6 +128,53 @@ export class CartService {
    */
   promoError(): string | null {
     return this._promoError();
+  }
+
+  /**
+   * Flow name: TipSelectionFlow
+   *
+   * Contract:
+   * - Inputs: partially-typed persisted or UI-provided selection.
+   * - Output: normalized TipSelection with non-negative amount/percent.
+   * - Errors: never throws (defensive normalization).
+   * - Side effects: none (pure).
+   */
+  private normalizeTipSelection(input: Partial<TipSelection> | null | undefined): TipSelection {
+    const type = input?.type === 'amount' ? 'amount' : 'percent';
+
+    if (type === 'amount') {
+      const amt = typeof input?.amount === 'number' ? input.amount : 0;
+      return { type: 'amount', amount: Math.max(0, amt) };
+    }
+
+    const pct = typeof input?.percent === 'number' ? input.percent : 0;
+    return { type: 'percent', percent: Math.max(0, pct) };
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Current tip selection (persisted with cart).
+   */
+  tipSelection(): TipSelection {
+    return this._tipSelection();
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Update tip selection and persist it.
+   *
+   * Flow name: UpdateTipSelectionFlow
+   *
+   * Contract:
+   * - Inputs: TipSelection (percent uses 0..1, amount uses dollars)
+   * - Output: void
+   * - Errors: never throws
+   * - Side effects: updates cart tip state + persists to localStorage
+   */
+  setTipSelection(selection: TipSelection): void {
+    const normalized = this.normalizeTipSelection(selection);
+    this._tipSelection.set(normalized);
+    this.persistToStorage();
   }
 
   // PUBLIC_INTERFACE
@@ -268,6 +324,7 @@ export class CartService {
     this._items.set([]);
     this._promoCode.set(null);
     this._promoError.set(null);
+    this._tipSelection.set({ type: 'percent', percent: 0.0 });
     // Clearing cart should also clear persisted cart to avoid stale re-hydration.
     this.storage.remove(this.storageKey);
   }
@@ -342,6 +399,7 @@ export class CartService {
       this._deliveryFee.set(deliveryFee);
       this._promoCode.set(null);
       this._promoError.set(null);
+      this._tipSelection.set({ type: 'percent', percent: 0.0 });
 
       let notice: string | undefined;
 
@@ -422,6 +480,39 @@ export class CartService {
     const gross = this.subtotal() + this.deliveryFee();
     const discounted = gross - this.promoDiscount();
     return Math.max(0, discounted);
+  });
+
+  /**
+   * Internal helper for computing tip amount from selection and a base amount.
+   * Tip is always non-negative and rounded to cents.
+   */
+  private computeTipAmount(baseAfterDiscount: number, selection: TipSelection): number {
+    const base = Math.max(0, baseAfterDiscount);
+    if (base <= 0) return 0;
+
+    if (selection.type === 'amount') {
+      const amt = typeof selection.amount === 'number' ? selection.amount : 0;
+      return Math.round(Math.max(0, amt) * 100) / 100;
+    }
+
+    const pct = typeof selection.percent === 'number' ? selection.percent : 0;
+    const computed = base * Math.max(0, pct);
+    return Math.round(computed * 100) / 100;
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Tip amount in dollars, computed from tipSelection() and totalAfterDiscount().
+   */
+  tipAmount = computed(() => this.computeTipAmount(this.totalAfterDiscount(), this._tipSelection()));
+
+  // PUBLIC_INTERFACE
+  /**
+   * Grand total including tip (dollars).
+   */
+  totalWithTip = computed(() => {
+    if (this._items().length === 0) return 0;
+    return Math.max(0, this.totalAfterDiscount() + this.tipAmount());
   });
 
   // PUBLIC_INTERFACE
