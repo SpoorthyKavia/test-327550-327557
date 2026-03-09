@@ -74,6 +74,10 @@
 }
 .menu-item:first-of-type{ border-top: 0; }
 
+.mi-main{
+  min-width: 0;
+}
+
 .mi-name{
   font-weight: 800;
   display:flex;
@@ -82,7 +86,11 @@
   flex-wrap: wrap;
 }
 
-.mi-desc{ font-size: 12px; margin-top: 4px; }
+.mi-desc{
+  font-size: 12px;
+  margin-top: 4px;
+  line-height: 1.4;
+}
 
 .mi-actions{
   display:flex;
@@ -101,4 +109,37 @@
 .pill.small{
   padding: 4px 8px;
   font-size: 11px;
+}
+
+/* Responsive: stack menu actions below description on small screens */
+@media (max-width: 520px){
+  .stat{
+    min-width: 0;
+    flex: 1;
+  }
+
+  .menu-item{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mi-actions{
+    justify-content: space-between;
+  }
+
+  .price{
+    text-align: left;
+    min-width: 0;
+  }
+
+  .mi-actions .btn{
+    width: 100%;
+  }
+}
+
+/* Large screens: slightly more breathing room */
+@media (min-width: 980px){
+  .category{
+    padding: 16px;
+  }
 }

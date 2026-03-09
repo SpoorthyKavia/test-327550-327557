@@ -32,6 +32,7 @@
   color: #0b1220;
   font-weight: 800;
   letter-spacing: 0.6px;
+  flex: 0 0 auto;
 }
 
 .brand-text .name{
@@ -67,6 +68,30 @@
 
 .main{
   padding: 16px 0 26px;
+}
+
+/* Mobile topbar layout: stack actions under brand */
+@media (max-width: 720px){
+  .topbar-inner{
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .brand{
+    min-width: 0;
+    width: 100%;
+  }
+
+  .actions{
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 420px){
+  .brand-text .tag{
+    display: none;
+  }
 }
 
 /* Drawer */
@@ -178,7 +203,22 @@
   display:inline-flex;
 }
 
-.disabled{
-  pointer-events: none;
-  opacity: 0.6;
+/* Drawer: on small screens, make actions stack more naturally */
+@media (max-width: 520px){
+  .drawer-header{
+    position: sticky;
+    top: 0;
+    background: rgba(15,27,51,0.96);
+    backdrop-filter: blur(12px);
+    z-index: 1;
+  }
+
+  .cart-item{
+    flex-direction: column;
+  }
+
+  .ci-actions{
+    width: 100%;
+    justify-content: flex-start;
+  }
 }

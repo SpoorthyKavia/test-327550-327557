@@ -22,11 +22,12 @@
   background: rgba(255,255,255,0.03);
   color: var(--text);
   outline: none;
+  min-height: var(--tap);
 }
 
 .search-input:focus{
   border-color: rgba(109,94,252,0.55);
-  box-shadow: 0 0 0 4px rgba(109,94,252,0.14);
+  box-shadow: var(--ring);
 }
 
 .hero-badges{
@@ -34,6 +35,7 @@
   flex-wrap: wrap;
   gap: 8px;
   justify-content:flex-end;
+  align-items: flex-start;
 }
 
 .cards{
@@ -47,10 +49,17 @@
   gap: 10px;
   transition: transform 0.10s ease, border-color 0.12s ease, background 0.12s ease;
 }
+
 .restaurant:hover{
   transform: translateY(-2px);
   border-color: rgba(232,238,252,0.18);
   background: rgba(255,255,255,0.05);
+}
+
+.restaurant:focus-visible{
+  outline: none;
+  box-shadow: var(--ring);
+  border-color: rgba(109,94,252,0.55);
 }
 
 .r-head{
@@ -64,6 +73,7 @@
   font-weight: 900;
   letter-spacing: 0.2px;
   font-size: 16px;
+  line-height: 1.2;
 }
 
 .r-cuisine{ font-size: 12px; }
@@ -93,6 +103,33 @@
   margin-top: 6px;
 }
 
+.r-cta .btn{
+  width: 100%;
+}
+
 .empty{
   margin-top: 12px;
+}
+
+/* Responsive hero: stack and make badges left-aligned on narrow screens */
+@media (max-width: 820px){
+  .hero{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-text{
+    max-width: none;
+  }
+
+  .hero-badges{
+    justify-content: flex-start;
+  }
+}
+
+/* Responsive restaurant card: stack meta and avoid cramped layout */
+@media (max-width: 420px){
+  .r-meta{
+    flex-direction: column;
+  }
 }

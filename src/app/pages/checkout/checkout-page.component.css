@@ -27,11 +27,12 @@
   background: rgba(255,255,255,0.03);
   color: var(--text);
   outline: none;
+  min-height: var(--tap);
 }
 
 .input:focus{
   border-color: rgba(109,94,252,0.55);
-  box-shadow: 0 0 0 4px rgba(109,94,252,0.14);
+  box-shadow: var(--ring);
 }
 
 .textarea{
@@ -83,6 +84,10 @@
 }
 .line:first-of-type{ border-top: 0; }
 
+.l-main{
+  min-width: 0;
+}
+
 .l-title{ font-weight: 800; }
 .l-meta{ font-size: 12px; margin-top: 2px; }
 .l-price{ font-weight: 900; min-width: 90px; text-align:right; }
@@ -124,4 +129,21 @@
 
 .link{
   text-decoration: underline;
+}
+
+/* Mobile: make primary CTA full width and keep summary readable */
+@media (max-width: 520px){
+  .form > .btn.primary{
+    width: 100%;
+  }
+
+  .l-price{
+    min-width: 0;
+    text-align: left;
+  }
+
+  .line{
+    flex-direction: column;
+    gap: 6px;
+  }
 }
