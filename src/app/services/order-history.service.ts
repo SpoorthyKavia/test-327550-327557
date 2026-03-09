@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
+import {
+  CustomerInfo,
+  OrderSnapshot,
+  PaymentMethod,
+  toOrderLineSnapshot,
+} from '../models/order.models';
 import { CartService } from './cart.service';
-import { CustomerInfo, OrderSnapshot, PaymentMethod, toOrderLineSnapshot } from '../models/order.models';
 
 interface PlaceOrderRequest {
   customer: CustomerInfo;
@@ -31,7 +36,8 @@ export class OrderHistoryService {
       if (!raw) return [];
       const parsed = JSON.parse(raw) as unknown;
       if (!Array.isArray(parsed)) return [];
-      // Minimal shape validation to avoid runtime errors in templates
+
+      // Minimal shape validation to avoid runtime errors in templates.
       return parsed
         .filter((o) => o && typeof o === 'object' && typeof (o as any).id === 'string')
         .sort((a, b) => ((a as any).placedAtIso < (b as any).placedAtIso ? 1 : -1)) as OrderSnapshot[];
@@ -53,7 +59,7 @@ export class OrderHistoryService {
     try {
       window.localStorage.removeItem(this.storageKey);
     } catch {
-      // no-op: localStorage might be blocked; app should remain usable
+      // No-op: localStorage might be blocked; app should remain usable.
     }
   }
 
@@ -99,7 +105,9 @@ export class OrderHistoryService {
     if (!allSameRestaurant) {
       // This should not happen because CartService resets on different restaurant,
       // but we keep the invariant explicit and defensive for future changes.
-      throw new Error('Cart contains items from multiple restaurants. Please clear cart and try again.');
+      throw new Error(
+        'Cart contains items from multiple restaurants. Please clear cart and try again.',
+      );
     }
 
     const subtotal = items.reduce((sum, l) => sum + l.price * l.quantity, 0);
@@ -148,7 +156,10 @@ export class OrderHistoryService {
   }
 
   private newOrderId(): string {
-    // readable, unique enough for local demo usage
-    return `ORD-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+    // Readable, unique enough for local demo usage.
+    return `ORD-${Date.now().toString(36)}-${Math.random()
+      .toString(36)
+      .slice(2, 7)
+      .toUpperCase()}`;
   }
 }

@@ -1,9 +1,9 @@
-import { Component, computed, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe, NgFor, NgIf } from '@angular/common';
+import { Component, computed, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { OrderHistoryService } from '../../services/order-history.service';
 import { OrderSnapshot } from '../../models/order.models';
 import { CartService } from '../../services/cart.service';
+import { OrderHistoryService } from '../../services/order-history.service';
 import { ToastService } from '../../services/toast.service';
 
 @Component({
@@ -16,7 +16,7 @@ export class OrderHistoryPageComponent {
   private readonly refreshTick = signal(0);
 
   protected readonly orders = computed<OrderSnapshot[]>(() => {
-    // signal dependency to refresh after clear
+    // Signal dependency to refresh after clear.
     this.refreshTick();
     return this.history.getOrders();
   });

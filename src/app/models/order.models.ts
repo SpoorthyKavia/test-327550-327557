@@ -13,10 +13,12 @@ export type TipType = 'percent' | 'amount';
 
 export interface TipSelection {
   type: TipType;
+
   /**
    * Tip percent (e.g., 0.15 for 15%). Present when type === 'percent'.
    */
   percent?: number;
+
   /**
    * Tip amount (dollars). Present when type === 'amount'.
    */

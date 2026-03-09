@@ -47,6 +47,7 @@
 .strong {
   font-weight: 900;
 }
+
 .small {
   font-size: 12px;
 }
@@ -67,6 +68,7 @@
   padding: 10px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
+
 .line:first-of-type {
   border-top: 0;
 }
@@ -74,10 +76,12 @@
 .l-title {
   font-weight: 800;
 }
+
 .l-meta {
   font-size: 12px;
   margin-top: 2px;
 }
+
 .l-price {
   font-weight: 900;
   min-width: 90px;
@@ -97,6 +101,7 @@
   justify-content: space-between;
   padding: 6px 0;
 }
+
 .row.strong {
   font-weight: 900;
 }
