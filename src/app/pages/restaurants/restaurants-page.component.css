@@ -61,6 +61,32 @@
   gap: 8px;
 }
 
+.fav-row{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.fav-toggle{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  user-select: none;
+}
+
+.fav-toggle input{
+  width: 16px;
+  height: 16px;
+}
+
+.pill.small{
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
 .filter-label{
   font-size: 11px;
   margin-bottom: 6px;
@@ -171,6 +197,41 @@
   justify-content: space-between;
   align-items:center;
   gap: 10px;
+}
+
+.r-head-actions{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+}
+
+.fav-btn{
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  border-radius: 999px;
+  width: 34px;
+  height: 34px;
+  display:grid;
+  place-items:center;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.fav-btn:hover{
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(232,238,252,0.18);
+}
+
+.fav-btn.active{
+  border-color: rgba(255, 204, 0, 0.65);
+  box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.15);
+}
+
+.fav-btn:focus-visible{
+  outline: none;
+  box-shadow: var(--ring);
+  border-color: rgba(109,94,252,0.55);
 }
 
 .r-name{

@@ -4,6 +4,7 @@ import { CurrencyPipe, NgIf } from '@angular/common';
 import { FoodDataService } from '../../services/food-data.service';
 import { CartService } from '../../services/cart.service';
 import { ToastService } from '../../services/toast.service';
+import { RestaurantFavoritesService } from '../../services/restaurant-favorites.service';
 import { MenuItem, Restaurant } from '../../models/food.models';
 
 @Component({
@@ -30,6 +31,7 @@ export class RestaurantDetailPageComponent {
     private readonly foodData: FoodDataService,
     private readonly cart: CartService,
     private readonly toasts: ToastService,
+    protected readonly favorites: RestaurantFavoritesService,
   ) {
     const id = this.route.snapshot.paramMap.get('id') ?? '';
     this.restaurant.set(this.foodData.getRestaurantById(id));
@@ -63,5 +65,13 @@ export class RestaurantDetailPageComponent {
     if (item.vegetarian) out.push('Vegetarian');
     if (item.spicy) out.push('Spicy');
     return out;
+  }
+
+  protected toggleFavorite(): void {
+    const r = this.restaurant();
+    if (!r) return;
+
+    const nowFavorite = this.favorites.toggle(r.id);
+    this.toasts.info(nowFavorite ? `Saved "${r.name}" to favorites.` : `Removed "${r.name}" from favorites.`, 1600);
   }
 }

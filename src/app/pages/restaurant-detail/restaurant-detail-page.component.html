@@ -2,7 +2,22 @@
 
 <section class="header card" *ngIf="restaurant() as r; else notFound">
   <div class="h-main">
-    <h1 class="page-title">{{ r.name }}</h1>
+    <div class="title-row">
+      <h1 class="page-title">{{ r.name }}</h1>
+
+      <button
+        class="fav-btn"
+        type="button"
+        (click)="toggleFavorite()"
+        [class.active]="favorites.isFavorite(r.id)"
+        [attr.aria-pressed]="favorites.isFavorite(r.id)"
+        [attr.aria-label]="favorites.isFavorite(r.id) ? 'Unfavorite ' + r.name : 'Favorite ' + r.name"
+        title="Toggle favorite"
+      >
+        {{ favorites.isFavorite(r.id) ? '★' : '☆' }}
+      </button>
+    </div>
+
     <div class="muted">{{ r.cuisine.join(' • ') }} • {{ r.rating }} ★</div>
 
     <div class="stats">

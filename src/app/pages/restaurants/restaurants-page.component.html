@@ -70,6 +70,18 @@
             <option value="name_asc">Name (A → Z)</option>
           </select>
 
+          <div class="fav-row">
+            <label class="fav-toggle">
+              <input
+                type="checkbox"
+                [checked]="favoritesOnly()"
+                (change)="setFavoritesOnly(!!$any($event.target).checked)"
+              />
+              <span>Favorites only</span>
+              <span class="pill small" *ngIf="favoritesCount() > 0">{{ favoritesCount() }}</span>
+            </label>
+          </div>
+
           <button class="btn ghost reset" type="button" (click)="resetFilters()">Reset</button>
         </div>
       </div>
@@ -87,8 +99,24 @@
   <a class="restaurant card" *ngFor="let r of filtered(); trackBy: r.id" [routerLink]="['/restaurants', r.id]">
     <div class="r-head">
       <div class="r-name">{{ r.name }}</div>
-      <div class="pill">{{ r.rating }} ★</div>
+
+      <div class="r-head-actions">
+        <button
+          class="fav-btn"
+          type="button"
+          [class.active]="favorites.isFavorite(r.id)"
+          (click)="toggleFavoriteFromCard($event, r.id)"
+          [attr.aria-pressed]="favorites.isFavorite(r.id)"
+          [attr.aria-label]="favorites.isFavorite(r.id) ? 'Unfavorite ' + r.name : 'Favorite ' + r.name"
+          title="Toggle favorite"
+        >
+          {{ favorites.isFavorite(r.id) ? '★' : '☆' }}
+        </button>
+
+        <div class="pill">{{ r.rating }} ★</div>
+      </div>
     </div>
+
     <div class="muted r-cuisine">{{ cuisineLabel(r) }}</div>
 
     <div class="r-meta">

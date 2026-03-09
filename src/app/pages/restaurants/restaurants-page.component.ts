@@ -1,6 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FoodDataService } from '../../services/food-data.service';
+import { RestaurantFavoritesService } from '../../services/restaurant-favorites.service';
 import { Restaurant } from '../../models/food.models';
 
 type SortKey = 'recommended' | 'rating_desc' | 'eta_asc' | 'delivery_asc' | 'name_asc';
@@ -23,6 +24,9 @@ export class RestaurantsPageComponent {
 
   protected readonly sortKey = signal<SortKey>('recommended');
 
+  /** If true, show only restaurants favorited by the user. */
+  protected readonly favoritesOnly = signal(false);
+
   protected readonly cuisines = computed(() => {
     const set = new Set<string>();
     for (const r of this.restaurants()) {
@@ -31,9 +35,12 @@ export class RestaurantsPageComponent {
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   });
 
+  protected readonly favoritesCount = computed(() => this.favorites.getFavorites().length);
+
   protected readonly filtered = computed(() => {
     const q = this.query().trim().toLowerCase();
     const selected = this.selectedCuisine();
+    const favOnly = this.favoritesOnly();
 
     // 1) Filter
     let list = this.restaurants().filter((r) => {
@@ -43,7 +50,9 @@ export class RestaurantsPageComponent {
 
       const matchesCuisine = selected === 'All' ? true : r.cuisine.includes(selected);
 
-      return matchesQuery && matchesCuisine;
+      const matchesFavorite = favOnly ? this.favorites.isFavorite(r.id) : true;
+
+      return matchesQuery && matchesCuisine && matchesFavorite;
     });
 
     // 2) Sort (non-mutating)
@@ -70,7 +79,10 @@ export class RestaurantsPageComponent {
     return list;
   });
 
-  constructor(private readonly foodData: FoodDataService) {}
+  constructor(
+    private readonly foodData: FoodDataService,
+    protected readonly favorites: RestaurantFavoritesService,
+  ) {}
 
   protected setQuery(value: string): void {
     this.query.set(value);
@@ -88,13 +100,25 @@ export class RestaurantsPageComponent {
     }
   }
 
+  protected setFavoritesOnly(value: boolean): void {
+    this.favoritesOnly.set(value);
+  }
+
   protected resetFilters(): void {
     this.selectedCuisine.set('All');
     this.sortKey.set('recommended');
     this.query.set('');
+    this.favoritesOnly.set(false);
   }
 
   protected cuisineLabel(r: Restaurant): string {
     return r.cuisine.join(' • ');
+  }
+
+  protected toggleFavoriteFromCard(event: Event, restaurantId: string): void {
+    // Prevent navigating when clicking the favorite button inside an <a> card.
+    event.preventDefault();
+    event.stopPropagation();
+    this.favorites.toggle(restaurantId);
   }
 }
