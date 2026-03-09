@@ -2,13 +2,15 @@ import { Component, computed, signal } from '@angular/core';
 import { CurrencyPipe, NgIf } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { CartService } from '../../services/cart.service';
+import { OrderHistoryService } from '../../services/order-history.service';
+import { PaymentMethod } from '../../models/order.models';
 
 interface CheckoutForm {
   name: string;
   phone: string;
   address: string;
   instructions: string;
-  paymentMethod: 'card' | 'cash';
+  paymentMethod: PaymentMethod;
 }
 
 @Component({
@@ -27,12 +29,12 @@ export class CheckoutPageComponent {
   });
 
   protected readonly error = signal<string | null>(null);
-  protected readonly success = signal<string | null>(null);
 
   protected readonly cartEmpty = computed(() => this.cart.items().length === 0);
 
   constructor(
     protected readonly cart: CartService,
+    private readonly history: OrderHistoryService,
     private readonly router: Router,
   ) {}
 
@@ -42,22 +44,28 @@ export class CheckoutPageComponent {
 
   protected placeOrder(): void {
     this.error.set(null);
-    this.success.set(null);
 
-    if (this.cart.items().length === 0) {
-      this.error.set('Your cart is empty.');
-      return;
+    try {
+      const f = this.form();
+      const { order } = this.history.placeOrder(
+        {
+          customer: {
+            name: f.name,
+            phone: f.phone,
+            address: f.address,
+            instructions: f.instructions,
+          },
+          paymentMethod: f.paymentMethod,
+        },
+        this.cart,
+      );
+
+      // Navigate to confirmation and pass the order snapshot in navigation state.
+      // The confirmation page also supports refresh by falling back to the latest stored order.
+      this.router.navigateByUrl('/order-confirmation', { state: { order } });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Failed to place order.';
+      this.error.set(message);
     }
-
-    const f = this.form();
-    if (!f.name.trim() || !f.phone.trim() || !f.address.trim()) {
-      this.error.set('Please fill in name, phone, and delivery address.');
-      return;
-    }
-
-    // Demo behavior: "place order" locally and clear cart.
-    this.cart.clear();
-    this.success.set('Order placed! (Demo) Your food is on the way.');
-    window.setTimeout(() => this.router.navigateByUrl('/'), 1800);
   }
 }

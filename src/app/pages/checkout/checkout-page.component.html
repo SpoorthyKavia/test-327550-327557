@@ -4,7 +4,6 @@
     <p class="muted">Enter your details and place a demo order.</p>
 
     <div class="alert error" *ngIf="error() as e">{{ e }}</div>
-    <div class="alert success" *ngIf="success() as s">{{ s }}</div>
 
     <div class="form">
       <label class="field">
@@ -68,6 +67,10 @@
 
       <div class="muted small" *ngIf="cartEmpty()">
         Your cart is empty. <a routerLink="/" class="link">Browse restaurants</a>.
+      </div>
+
+      <div class="muted small">
+        Want to see past orders? <a routerLink="/orders" class="link">View order history</a>.
       </div>
     </div>
   </div>
