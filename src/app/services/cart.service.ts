@@ -1,6 +1,8 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { LocalStorageService } from './local-storage.service';
 import { PromoCodeService, PromoDiscountBreakdown } from './promo-code.service';
+import { FoodDataService } from './food-data.service';
+import { OrderSnapshot } from '../models/order.models';
 
 export interface CartLine {
   key: string;
@@ -19,6 +21,19 @@ interface PersistedCartV1 {
   promoCode?: string | null;
 }
 
+/**
+ * Result object for rebuilding the cart from a past order.
+ */
+export interface RestoreCartFromOrderResult {
+  ok: boolean;
+  /** Router link to continue ordering (restaurant page) when ok=true. */
+  continueUrl?: string;
+  /** Human-friendly notice for the UI (e.g., promo not re-applied). */
+  notice?: string;
+  /** Error message when ok=false. */
+  error?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly storageKey = 'fd.cart.v1';
@@ -33,6 +48,7 @@ export class CartService {
   constructor(
     private readonly storage: LocalStorageService,
     private readonly promos: PromoCodeService,
+    private readonly foodData: FoodDataService,
   ) {
     this.restoreFromStorage();
   }
@@ -254,6 +270,100 @@ export class CartService {
     this._promoError.set(null);
     // Clearing cart should also clear persisted cart to avoid stale re-hydration.
     this.storage.remove(this.storageKey);
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Restore the cart from a past order snapshot and return a navigation target.
+   *
+   * Flow name: RestoreCartFromOrderFlow
+   *
+   * Contract:
+   * - Inputs:
+   *   - order: OrderSnapshot (must have restaurantId, lines with menuItemId/name/price/quantity)
+   * - Output: RestoreCartFromOrderResult
+   *   - ok=true => cart state updated, continueUrl indicates where to route next
+   *   - ok=false => cart not modified
+   * - Errors:
+   *   - never throws (returns ok=false with error message)
+   * - Side effects:
+   *   - overwrites cart items/delivery fee/promo state
+   *   - persists to localStorage
+   *
+   * Invariants enforced:
+   * - All restored cart lines belong to the order's restaurant.
+   * - Quantity is preserved from the order.
+   *
+   * Promo handling:
+   * - Attempts to re-apply order.promoCode against the restored cart context.
+   * - If promo is no longer eligible/valid, it is not applied and a notice is returned.
+   */
+  restoreFromOrder(order: OrderSnapshot): RestoreCartFromOrderResult {
+    try {
+      if (!order || typeof order !== 'object') {
+        return { ok: false, error: 'Invalid order.' };
+      }
+      if (!order.restaurantId || !Array.isArray(order.lines) || order.lines.length === 0) {
+        return { ok: false, error: 'Order has no items to reorder.' };
+      }
+
+      const restaurant = this.foodData.getRestaurantById(order.restaurantId);
+      if (!restaurant) {
+        // In demo app, restaurants are static. If missing, we cannot determine delivery fee.
+        return { ok: false, error: 'Restaurant for this order is no longer available.' };
+      }
+
+      const deliveryFee = restaurant.deliveryFeeCents / 100;
+
+      // Build new cart lines from order snapshot.
+      const restoredLines: CartLine[] = order.lines
+        .filter((l) => l && typeof l.menuItemId === 'string' && typeof l.quantity === 'number')
+        .map((l) => {
+          const menuItemId = l.menuItemId;
+          const key = `${order.restaurantId}:${menuItemId}`;
+          const quantity = Math.max(1, Math.floor(l.quantity));
+          return {
+            key,
+            restaurantId: order.restaurantId,
+            restaurantName: order.restaurantName,
+            menuItemId,
+            name: l.name,
+            price: l.price,
+            quantity,
+          };
+        });
+
+      if (restoredLines.length === 0) {
+        return { ok: false, error: 'Order has no valid items to reorder.' };
+      }
+
+      // Overwrite cart state (reorder should be deterministic).
+      this._items.set(restoredLines);
+      this._deliveryFee.set(deliveryFee);
+      this._promoCode.set(null);
+      this._promoError.set(null);
+
+      let notice: string | undefined;
+
+      // Attempt to re-apply promo if present on the order.
+      if (order.promoCode) {
+        const promoOk = this.applyPromoCode(order.promoCode);
+        if (!promoOk) {
+          notice = 'Items restored, but the promo code could not be re-applied.';
+        }
+      }
+
+      this.persistToStorage();
+
+      return {
+        ok: true,
+        continueUrl: `/restaurants/${order.restaurantId}`,
+        notice,
+      };
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Failed to restore cart from order.';
+      return { ok: false, error: message };
+    }
   }
 
   // PUBLIC_INTERFACE
