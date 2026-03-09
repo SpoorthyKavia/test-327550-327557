@@ -1,0 +1,25 @@
+<div class="toast-stack" aria-live="polite" aria-relevant="additions removals">
+  <div
+    class="toast"
+    *ngFor="let t of toasts.toasts(); trackBy: trackById"
+    [attr.data-kind]="t.kind"
+    role="status"
+  >
+    <div class="toast-icon" aria-hidden="true"></div>
+
+    <div class="toast-content">
+      <div class="toast-message">{{ t.message }}</div>
+    </div>
+
+    <button
+      *ngIf="t.dismissible"
+      class="toast-close"
+      type="button"
+      (click)="toasts.dismiss(t.id)"
+      aria-label="Dismiss notification"
+      title="Dismiss"
+    >
+      ×
+    </button>
+  </div>
+</div>

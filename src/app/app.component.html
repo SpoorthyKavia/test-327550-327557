@@ -22,6 +22,8 @@
   </div>
 </header>
 
+<app-toast-host></app-toast-host>
+
 <main class="container main">
   <router-outlet></router-outlet>
 </main>
@@ -51,10 +53,10 @@
       </div>
 
       <div class="ci-actions">
-        <button class="btn" type="button" (click)="cartService.decrement(item.key)" aria-label="Decrease quantity">-</button>
+        <button class="btn" type="button" (click)="onDecrement(item)" aria-label="Decrease quantity">-</button>
         <div class="qty" aria-label="Quantity">{{ item.quantity }}</div>
-        <button class="btn" type="button" (click)="cartService.increment(item.key)" aria-label="Increase quantity">+</button>
-        <button class="btn danger" type="button" (click)="cartService.remove(item.key)" aria-label="Remove item">Remove</button>
+        <button class="btn" type="button" (click)="onIncrement(item)" aria-label="Increase quantity">+</button>
+        <button class="btn danger" type="button" (click)="onRemove(item)" aria-label="Remove item">Remove</button>
       </div>
     </div>
   </div>
@@ -78,7 +80,7 @@
     <a class="btn primary full" routerLink="/checkout" (click)="closeCart()" [class.disabled]="cartService.items().length === 0">
       Go to checkout
     </a>
-    <button class="btn full" type="button" (click)="cartService.clear()" [disabled]="cartService.items().length === 0">
+    <button class="btn full" type="button" (click)="onClearCart()" [disabled]="cartService.items().length === 0">
       Clear cart
     </button>
   </div>

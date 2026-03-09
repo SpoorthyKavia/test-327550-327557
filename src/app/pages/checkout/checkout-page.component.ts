@@ -5,6 +5,7 @@ import { CartService } from '../../services/cart.service';
 import { OrderHistoryService } from '../../services/order-history.service';
 import { PaymentMethod } from '../../models/order.models';
 import { LocalStorageService } from '../../services/local-storage.service';
+import { ToastService } from '../../services/toast.service';
 
 interface CheckoutForm {
   name: string;
@@ -45,6 +46,7 @@ export class CheckoutPageComponent {
     private readonly history: OrderHistoryService,
     private readonly router: Router,
     private readonly storage: LocalStorageService,
+    private readonly toasts: ToastService,
   ) {
     this.restoreFormFromStorage();
   }
@@ -115,12 +117,15 @@ export class CheckoutPageComponent {
       // so we should also clear persisted checkout form to avoid stale restoration.
       this.clearPersistedForm();
 
+      this.toasts.success('Order placed!', 2000);
+
       // Navigate to confirmation and pass the order snapshot in navigation state.
       // The confirmation page also supports refresh by falling back to the latest stored order.
       this.router.navigateByUrl('/order-confirmation', { state: { order } });
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Failed to place order.';
       this.error.set(message);
+      this.toasts.error(message);
     }
   }
 }

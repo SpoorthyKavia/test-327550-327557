@@ -3,6 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CurrencyPipe, NgIf } from '@angular/common';
 import { FoodDataService } from '../../services/food-data.service';
 import { CartService } from '../../services/cart.service';
+import { ToastService } from '../../services/toast.service';
 import { MenuItem, Restaurant } from '../../models/food.models';
 
 @Component({
@@ -28,6 +29,7 @@ export class RestaurantDetailPageComponent {
     private readonly route: ActivatedRoute,
     private readonly foodData: FoodDataService,
     private readonly cart: CartService,
+    private readonly toasts: ToastService,
   ) {
     const id = this.route.snapshot.paramMap.get('id') ?? '';
     this.restaurant.set(this.foodData.getRestaurantById(id));
@@ -49,13 +51,11 @@ export class RestaurantDetailPageComponent {
       price: item.priceCents / 100,
     });
 
-    this.notice.set(
-      result.resetOccurred
-        ? 'Cart was cleared because it contained items from another restaurant.'
-        : 'Added to cart.',
-    );
-
-    window.setTimeout(() => this.notice.set(null), 2200);
+    if (result.resetOccurred) {
+      this.toasts.warning('Cart cleared (different restaurant). Added item to new cart.');
+    } else {
+      this.toasts.success('Added to cart.', 1600);
+    }
   }
 
   protected badges(item: MenuItem): string[] {
