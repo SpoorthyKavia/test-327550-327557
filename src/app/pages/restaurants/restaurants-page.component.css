@@ -10,8 +10,15 @@
   max-width: 650px;
 }
 
-.search{
+.controls{
   margin-top: 10px;
+  display:flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.search{
+  margin-top: 0;
 }
 
 .search-input{
@@ -28,6 +35,103 @@
 .search-input:focus{
   border-color: rgba(109,94,252,0.55);
   box-shadow: var(--ring);
+}
+
+.filters{
+  display:flex;
+  gap: 12px;
+  align-items:flex-end;
+  flex-wrap: wrap;
+}
+
+.filter-group{
+  flex: 1;
+  min-width: 240px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255,255,255,0.03);
+}
+
+.filter-group.sort{
+  flex: 0 1 260px;
+  min-width: 220px;
+  display:flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-label{
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.chip-row{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chip{
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 10px;
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  min-height: calc(var(--tap) - 8px);
+}
+
+.chip:hover{
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(232,238,252,0.18);
+}
+
+.chip.active{
+  border-color: rgba(109,94,252,0.55);
+  box-shadow: var(--ring);
+}
+
+.chip:focus-visible{
+  outline: none;
+  box-shadow: var(--ring);
+  border-color: rgba(109,94,252,0.55);
+}
+
+.select{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  outline: none;
+  min-height: var(--tap);
+}
+
+.select:focus{
+  border-color: rgba(109,94,252,0.55);
+  box-shadow: var(--ring);
+}
+
+.reset{
+  width: 100%;
+}
+
+.sr-only{
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 .hero-badges{
@@ -124,6 +228,17 @@
 
   .hero-badges{
     justify-content: flex-start;
+  }
+
+  .filter-group{
+    min-width: 0;
+  }
+}
+
+/* Make the chip row optional on very small screens; keep the select usable */
+@media (max-width: 520px){
+  .chip-row{
+    display:none;
   }
 }
 

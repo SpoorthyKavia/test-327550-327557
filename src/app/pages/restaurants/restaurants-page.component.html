@@ -4,17 +4,78 @@
     <p class="muted">
       Browse restaurants, add items to your cart, and place a demo order. (No backend required.)
     </p>
-    <div class="search">
-      <input
-        class="search-input"
-        type="search"
-        placeholder="Search restaurants or cuisine..."
-        [value]="query()"
-        (input)="setQuery(($any($event.target).value))"
-        aria-label="Search restaurants"
-      />
+
+    <div class="controls">
+      <div class="search">
+        <input
+          class="search-input"
+          type="search"
+          placeholder="Search restaurants or cuisine..."
+          [value]="query()"
+          (input)="setQuery(($any($event.target).value))"
+          aria-label="Search restaurants"
+        />
+      </div>
+
+      <div class="filters" aria-label="Restaurant filters">
+        <div class="filter-group">
+          <div class="filter-label muted">Cuisine / category</div>
+          <div class="chip-row" role="list">
+            <button
+              class="chip"
+              type="button"
+              [class.active]="selectedCuisine() === 'All'"
+              (click)="setCuisine('All')"
+              role="listitem"
+            >
+              All
+            </button>
+
+            <button
+              class="chip"
+              type="button"
+              *ngFor="let c of cuisines(); trackBy: c"
+              [class.active]="selectedCuisine() === c"
+              (click)="setCuisine(c)"
+              role="listitem"
+            >
+              {{ c }}
+            </button>
+          </div>
+
+          <label class="sr-only" for="cuisineSelect">Cuisine / category</label>
+          <select
+            id="cuisineSelect"
+            class="select"
+            [value]="selectedCuisine()"
+            (change)="setCuisine(($any($event.target).value))"
+          >
+            <option value="All">All</option>
+            <option *ngFor="let c of cuisines(); trackBy: c" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group sort">
+          <label class="filter-label muted" for="sortSelect">Sort</label>
+          <select
+            id="sortSelect"
+            class="select"
+            [value]="sortKey()"
+            (change)="setSort(($any($event.target).value))"
+          >
+            <option value="recommended">Recommended</option>
+            <option value="rating_desc">Rating (high → low)</option>
+            <option value="eta_asc">ETA (fastest)</option>
+            <option value="delivery_asc">Delivery fee (low → high)</option>
+            <option value="name_asc">Name (A → Z)</option>
+          </select>
+
+          <button class="btn ghost reset" type="button" (click)="resetFilters()">Reset</button>
+        </div>
+      </div>
     </div>
   </div>
+
   <div class="hero-badges">
     <div class="pill">Realistic UX</div>
     <div class="pill">Cart + Checkout</div>
@@ -49,5 +110,5 @@
 </section>
 
 <div class="muted empty" *ngIf="filtered().length === 0">
-  No restaurants match your search. Try “pizza” or “healthy”.
+  No restaurants match your filters. Try “pizza”, “healthy”, or pick a different cuisine.
 </div>
