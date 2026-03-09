@@ -1,149 +1,145 @@
-.panel{
-  padding: 16px;
+.grid {
+  display: grid;
+  gap: 16px;
 }
 
-.form{
-  display:flex;
+.cols-2 {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 880px) {
+  .cols-2 {
+    grid-template-columns: 1.2fr 0.8fr;
+  }
+}
+
+.page-title {
+  margin: 0 0 6px;
+  font-size: 24px;
+}
+
+.form {
+  display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 10px;
+  margin-top: 14px;
 }
 
-.field{
-  display:flex;
+.field {
+  display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.label{
-  font-size: 12px;
+.label {
+  font-size: 13px;
 }
 
-.input{
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.03);
-  color: var(--text);
+.input {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.25);
+  color: inherit;
+  border-radius: 10px;
+  padding: 10px 12px;
   outline: none;
-  min-height: var(--tap);
 }
 
-.input:focus{
-  border-color: rgba(109,94,252,0.55);
-  box-shadow: var(--ring);
+.input:focus {
+  border-color: rgba(124, 92, 255, 0.75);
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.15);
 }
 
-.textarea{
-  min-height: 92px;
+.textarea {
+  min-height: 90px;
   resize: vertical;
 }
 
-.radio-row{
-  display:flex;
-  gap: 14px;
+.radio-row {
+  display: flex;
+  gap: 12px;
   flex-wrap: wrap;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.03);
 }
 
-.radio{
-  display:flex;
-  align-items:center;
+.radio {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
 }
 
-.section-head{
-  display:flex;
-  align-items:center;
+.section-head {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 10px;
   margin-bottom: 12px;
 }
 
-.section-title{
-  font-weight: 900;
+.section-title {
+  font-weight: 700;
 }
 
-.summary-empty{
-  padding: 12px;
-  border: 1px dashed var(--border);
-  border-radius: 12px;
-}
-
-.line{
-  display:flex;
-  align-items:flex-start;
-  justify-content: space-between;
-  gap: 10px;
+.summary-empty {
   padding: 10px 0;
-  border-top: 1px solid var(--border);
-}
-.line:first-of-type{ border-top: 0; }
-
-.l-main{
-  min-width: 0;
 }
 
-.l-title{ font-weight: 800; }
-.l-meta{ font-size: 12px; margin-top: 2px; }
-.l-price{ font-weight: 900; min-width: 90px; text-align:right; }
-
-.totals{
-  margin-top: 12px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px;
-  background: rgba(255,255,255,0.03);
-}
-
-.row{
-  display:flex;
+.line {
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 6px 0;
-}
-.row.strong{ font-weight: 900; }
-
-.alert{
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.03);
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.alert.error{
-  border-color: rgba(255,77,109,0.35);
-  background: rgba(255,77,109,0.10);
+.l-title {
+  font-weight: 600;
 }
 
-.alert.success{
-  border-color: rgba(61,214,208,0.35);
-  background: rgba(61,214,208,0.10);
+.l-meta {
+  font-size: 12px;
 }
 
-.small{ font-size: 12px; }
-
-.link{
-  text-decoration: underline;
+.l-price {
+  font-variant-numeric: tabular-nums;
 }
 
-/* Mobile: make primary CTA full width and keep summary readable */
-@media (max-width: 520px){
-  .form > .btn.primary{
-    width: 100%;
-  }
+.totals {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
-  .l-price{
-    min-width: 0;
-    text-align: left;
-  }
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
 
-  .line{
-    flex-direction: column;
-    gap: 6px;
-  }
+.row.strong {
+  font-weight: 800;
+  font-size: 16px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.promo-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.promo-input {
+  width: 160px;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.neg {
+  color: #ff7a7a;
+}
+
+.alert.error {
+  margin-top: 8px;
 }

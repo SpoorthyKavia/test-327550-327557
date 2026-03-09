@@ -34,7 +34,7 @@ export class OrderHistoryService {
       // Minimal shape validation to avoid runtime errors in templates
       return parsed
         .filter((o) => o && typeof o === 'object' && typeof (o as any).id === 'string')
-        .sort((a, b) => (a.placedAtIso < b.placedAtIso ? 1 : -1)) as OrderSnapshot[];
+        .sort((a, b) => ((a as any).placedAtIso < (b as any).placedAtIso ? 1 : -1)) as OrderSnapshot[];
     } catch {
       return [];
     }
@@ -104,10 +104,14 @@ export class OrderHistoryService {
 
     const subtotal = items.reduce((sum, l) => sum + l.price * l.quantity, 0);
     const deliveryFee = cart.deliveryFee();
+    const discount = cart.promoDiscount();
+    const total = Math.max(0, subtotal + deliveryFee - discount);
+
     const totals = {
       subtotal,
       deliveryFee,
-      total: subtotal + deliveryFee,
+      discount,
+      total,
     };
 
     const order: OrderSnapshot = {
@@ -119,6 +123,7 @@ export class OrderHistoryService {
       paymentMethod: request.paymentMethod,
       lines: items.map(toOrderLineSnapshot),
       totals,
+      promoCode: cart.promoCode(),
     };
 
     this.appendOrder(order);

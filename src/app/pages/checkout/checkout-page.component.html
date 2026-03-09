@@ -93,16 +93,55 @@
 
     <div class="totals">
       <div class="row">
+        <div class="muted">Promo code</div>
+        <div class="promo-row">
+          <input
+            class="input promo-input"
+            type="text"
+            placeholder="Enter code"
+            [value]="promoCodeInput()"
+            (input)="updatePromoInput($any($event.target).value)"
+            [disabled]="cart.items().length === 0"
+          />
+          <button
+            class="btn"
+            type="button"
+            (click)="applyPromo()"
+            [disabled]="cart.items().length === 0 || !promoCodeInput().trim()"
+          >
+            Apply
+          </button>
+          <button class="btn" type="button" (click)="clearPromo()" [disabled]="cart.items().length === 0 || !cart.promoCode()">
+            Remove
+          </button>
+        </div>
+      </div>
+
+      <div class="alert error" *ngIf="cart.promoError() as pe">{{ pe }}</div>
+
+      <div class="row" *ngIf="cart.promoCode() as pc">
+        <div class="muted">Applied</div>
+        <div class="muted">{{ pc }} <span *ngIf="cart.promoLabel() as pl">({{ pl }})</span></div>
+      </div>
+
+      <div class="row">
         <div class="muted">Subtotal</div>
         <div>{{ cart.subtotal() | currency:'USD' }}</div>
       </div>
+
       <div class="row">
         <div class="muted">Delivery</div>
         <div>{{ cart.deliveryFee() | currency:'USD' }}</div>
       </div>
+
+      <div class="row" *ngIf="cart.promoDiscount() > 0">
+        <div class="muted">Discount</div>
+        <div class="neg">-{{ cart.promoDiscount() | currency:'USD' }}</div>
+      </div>
+
       <div class="row strong">
         <div>Total</div>
-        <div>{{ cart.total() | currency:'USD' }}</div>
+        <div>{{ cart.totalAfterDiscount() | currency:'USD' }}</div>
       </div>
     </div>
   </div>

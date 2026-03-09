@@ -1,5 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { LocalStorageService } from './local-storage.service';
+import { PromoCodeService, PromoDiscountBreakdown } from './promo-code.service';
 
 export interface CartLine {
   key: string;
@@ -15,6 +16,7 @@ interface PersistedCartV1 {
   version: 1;
   deliveryFee: number;
   items: CartLine[];
+  promoCode?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -24,7 +26,14 @@ export class CartService {
   private readonly _items = signal<CartLine[]>([]);
   private readonly _deliveryFee = signal<number>(2.49);
 
-  constructor(private readonly storage: LocalStorageService) {
+  // Promo code state lives with the cart so it can affect totals and persist locally.
+  private readonly _promoCode = signal<string | null>(null);
+  private readonly _promoError = signal<string | null>(null);
+
+  constructor(
+    private readonly storage: LocalStorageService,
+    private readonly promos: PromoCodeService,
+  ) {
     this.restoreFromStorage();
   }
 
@@ -42,8 +51,16 @@ export class CartService {
     const items = Array.isArray(persisted.items) ? persisted.items : [];
     const deliveryFee = typeof persisted.deliveryFee === 'number' ? persisted.deliveryFee : 2.49;
 
+    const promoCode =
+      typeof persisted.promoCode === 'string'
+        ? persisted.promoCode.trim().toUpperCase()
+        : persisted.promoCode === null
+          ? null
+          : null;
+
     this._items.set(items);
     this._deliveryFee.set(deliveryFee);
+    this._promoCode.set(promoCode || null);
   }
 
   private persistToStorage(): void {
@@ -51,6 +68,7 @@ export class CartService {
       version: 1,
       deliveryFee: this._deliveryFee(),
       items: this._items(),
+      promoCode: this._promoCode(),
     };
     this.storage.writeJson(this.storageKey, payload);
   }
@@ -73,6 +91,69 @@ export class CartService {
 
   // PUBLIC_INTERFACE
   /**
+   * Current promo code applied to cart (normalized uppercase), or null.
+   */
+  promoCode(): string | null {
+    return this._promoCode();
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Last promo validation error message (if any).
+   */
+  promoError(): string | null {
+    return this._promoError();
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Apply a promo code to the cart.
+   *
+   * Flow name: CartApplyPromoFlow
+   *
+   * Contract:
+   * - Inputs: raw promo code string.
+   * - Output: boolean success.
+   * - Errors: never throws; on invalid code sets promoError() with message.
+   * - Side effects: updates cart promo state + persists to localStorage.
+   */
+  applyPromoCode(codeRaw: string): boolean {
+    this._promoError.set(null);
+
+    const subtotal = this.subtotal();
+    const deliveryFee = this.deliveryFee();
+    const result = this.promos.applyPromoCode({
+      codeRaw,
+      lines: this._items(),
+      subtotal,
+      deliveryFee,
+    });
+
+    if (!result.ok || !result.code) {
+      this._promoCode.set(null);
+      this._promoError.set(result.error ?? 'Invalid promo code.');
+      this.persistToStorage();
+      return false;
+    }
+
+    this._promoCode.set(result.code);
+    this._promoError.set(null);
+    this.persistToStorage();
+    return true;
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Remove promo code from cart.
+   */
+  clearPromoCode(): void {
+    this._promoCode.set(null);
+    this._promoError.set(null);
+    this.persistToStorage();
+  }
+
+  // PUBLIC_INTERFACE
+  /**
    * Adds an item to cart. If cart contains items from a different restaurant, it resets cart first.
    */
   add(params: {
@@ -89,6 +170,9 @@ export class CartService {
 
     if (hasDifferentRestaurant) {
       this._items.set([]);
+      // Promo codes should not carry across restaurants.
+      this._promoCode.set(null);
+      this._promoError.set(null);
     }
 
     // Update delivery fee based on restaurant
@@ -166,6 +250,8 @@ export class CartService {
    */
   clear(): void {
     this._items.set([]);
+    this._promoCode.set(null);
+    this._promoError.set(null);
     // Clearing cart should also clear persisted cart to avoid stale re-hydration.
     this.storage.remove(this.storageKey);
   }
@@ -182,9 +268,56 @@ export class CartService {
    */
   totalItems = computed(() => this._items().reduce((sum, l) => sum + l.quantity, 0));
 
+  /**
+   * Internal helper to compute discount breakdown (or null) for current promo.
+   * Kept centralized so UI and totals always agree.
+   */
+  private computePromoBreakdown(): PromoDiscountBreakdown | null {
+    const code = this._promoCode();
+    if (!code) return null;
+
+    const subtotal = this.subtotal();
+    const deliveryFee = this.deliveryFee();
+    const result = this.promos.applyPromoCode({
+      codeRaw: code,
+      lines: this._items(),
+      subtotal,
+      deliveryFee,
+    });
+
+    if (!result.ok || !result.breakdown) return null;
+    return result.breakdown;
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Promo discount amount (dollars). Returns 0 if no promo is applied/valid.
+   */
+  promoDiscount = computed(() => this.computePromoBreakdown()?.discountAmount ?? 0);
+
+  // PUBLIC_INTERFACE
+  /**
+   * Promo discount label for UI. Returns null if none.
+   */
+  promoLabel = computed(() => this.computePromoBreakdown()?.label ?? null);
+
+  // PUBLIC_INTERFACE
+  /**
+   * Total after discounts (dollars).
+   *
+   * Invariant: never negative.
+   */
+  totalAfterDiscount = computed(() => {
+    if (this._items().length === 0) return 0;
+    const gross = this.subtotal() + this.deliveryFee();
+    const discounted = gross - this.promoDiscount();
+    return Math.max(0, discounted);
+  });
+
   // PUBLIC_INTERFACE
   /**
    * Cart total in dollars (subtotal + delivery fee if cart not empty).
+   * (Kept for backwards compatibility with existing UI; does not include promo.)
    */
   total = computed(() => (this._items().length > 0 ? this.subtotal() + this.deliveryFee() : 0));
 

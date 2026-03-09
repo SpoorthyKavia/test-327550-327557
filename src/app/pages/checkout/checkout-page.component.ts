@@ -1,5 +1,5 @@
 import { Component, computed, signal } from '@angular/core';
-import { CurrencyPipe, NgIf } from '@angular/common';
+import { CurrencyPipe, NgIf, NgFor } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { OrderHistoryService } from '../../services/order-history.service';
@@ -22,7 +22,7 @@ interface PersistedCheckoutFormV1 {
 
 @Component({
   selector: 'app-checkout-page',
-  imports: [CurrencyPipe, NgIf, RouterLink],
+  imports: [CurrencyPipe, NgIf, NgFor, RouterLink],
   templateUrl: './checkout-page.component.html',
   styleUrl: './checkout-page.component.css',
 })
@@ -37,6 +37,8 @@ export class CheckoutPageComponent {
     paymentMethod: 'card',
   });
 
+  protected readonly promoCodeInput = signal<string>('');
+
   protected readonly error = signal<string | null>(null);
 
   protected readonly cartEmpty = computed(() => this.cart.items().length === 0);
@@ -49,6 +51,8 @@ export class CheckoutPageComponent {
     private readonly toasts: ToastService,
   ) {
     this.restoreFormFromStorage();
+    // Pre-fill input from cart promo (if any)
+    this.promoCodeInput.set(this.cart.promoCode() ?? '');
   }
 
   /**
@@ -93,6 +97,28 @@ export class CheckoutPageComponent {
   protected update<K extends keyof CheckoutForm>(key: K, value: CheckoutForm[K]): void {
     this.form.set({ ...this.form(), [key]: value });
     this.persistFormToStorage();
+  }
+
+  protected updatePromoInput(value: string): void {
+    this.promoCodeInput.set(value);
+  }
+
+  protected applyPromo(): void {
+    const ok = this.cart.applyPromoCode(this.promoCodeInput());
+    if (ok) {
+      this.toasts.success('Promo applied!', 1500);
+      // normalize input to stored value
+      this.promoCodeInput.set(this.cart.promoCode() ?? this.promoCodeInput());
+    } else {
+      const message = this.cart.promoError() ?? 'Invalid promo code.';
+      this.toasts.error(message, 2000);
+    }
+  }
+
+  protected clearPromo(): void {
+    this.cart.clearPromoCode();
+    this.promoCodeInput.set('');
+    this.toasts.success('Promo removed', 1200);
   }
 
   protected placeOrder(): void {
